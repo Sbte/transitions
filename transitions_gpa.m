@@ -9,8 +9,6 @@ function [trans_prob] = transitions_gpa(F, B, dt, tmax, N, rho)
     beta = 1;
     Y = ones(1, N);
 
-    tmax = 100;
-
     bstr = '';
     for ti=1:tmax/tstep
         fprintf([bstr, 't=%10f'], ti * tstep);
@@ -28,14 +26,10 @@ function [trans_prob] = transitions_gpa(F, B, dt, tmax, N, rho)
 
         Y = Y .* exp(-beta * V(z));
 
-        for i = 1:N
-            dW = randn(1,tstep/dt) * sqrt(dt);
-            for j=1:tstep / dt
-                z(i) = z(i) + dt * F(z(i)) + B * dW(j);
-                if dist_fun(z(i)) > 0.95
-                    converged(i) = true;
-                end
-            end
+        for j=1:tstep / dt
+            dW = randn(1,N) * sqrt(dt);
+            z = z + dt * F(z) + B * dW;
+            converged = converged | (dist_fun(z) > 0.95);
         end
     end
     fprintf('\n');
