@@ -17,7 +17,7 @@ function [trans_prob, mfpt] = transitions_mfpt(F, B, dt, tmax, N, rho)
             dW = sqrt(dt) * randn(1,M);
             for i=1:M
                 t = t + dt;
-                z = z + dt * (z-z^3) + B * dW(i);
+                z = z + dt * F(z) + B * dW(i);
                 if dist_fun(z) > 1-rho
                     mfpt = mfpt + t;
                     converged = true;
