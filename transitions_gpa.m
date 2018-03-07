@@ -1,7 +1,6 @@
 function [trans_prob] = transitions_gpa(F, B, dt, tmax, N, rho)
 % Compute the transition probability with GPA
 
-    N = 5000;
     tstep = dt * 100;
     z = ones(1, N) * -1;
     converged = zeros(1, N);
@@ -9,7 +8,6 @@ function [trans_prob] = transitions_gpa(F, B, dt, tmax, N, rho)
     beta = 1;
     Y = ones(1, N);
 
-    bstr = '';
     for ti=1:tmax/tstep
         weights = exp(beta * V(z));
 

@@ -1,6 +1,5 @@
 function [trans_prob] = transitions_direct(F, B, dt, tmax, N, rho)
 % Compute the transition probability directly
-    ntrans = 0;
     tsteps = tmax / dt;
 
     t = 0;
