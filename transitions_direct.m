@@ -5,7 +5,6 @@ function [trans_prob] = transitions_direct(F, B, dt, tmax, N, rho)
 
     t = 0;
     z = ones(N,1) * -1;
-    dW = sqrt(dt) * randn(N,tsteps);
 
     % Loop until tmax and see if a transition happens
     for i=1:tsteps
