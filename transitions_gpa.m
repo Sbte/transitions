@@ -11,9 +11,6 @@ function [trans_prob] = transitions_gpa(F, B, dt, tmax, N, rho)
 
     bstr = '';
     for ti=1:tmax/tstep
-        fprintf([bstr, 't=%10f'], ti * tstep);
-        bstr = repmat('\b', 1, 12);
-
         weights = exp(beta * V(z));
 
         eta = eta * 1 / N * sum(weights);
@@ -32,7 +29,6 @@ function [trans_prob] = transitions_gpa(F, B, dt, tmax, N, rho)
             converged = converged | (dist_fun(z) > 0.95);
         end
     end
-    fprintf('\n');
 
     trans_prob = 0;
 
