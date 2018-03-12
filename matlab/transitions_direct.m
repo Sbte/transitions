@@ -11,10 +11,11 @@ function [trans_prob] = transitions_direct(F, B, dt, tmax, N, rho)
 
         t = t + dt;
         z = z + dt * F(z) + B * dW;
+
         converged = dist_fun(z) > 1-rho;
         z = z(find(~converged));
     end
 
-    ntrans = N-length(z);
+    ntrans = N - length(z);
     trans_prob = ntrans / N;
 end
