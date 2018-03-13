@@ -4,6 +4,7 @@
 
 extern "C"
 {
+    void dscal_(int *n, double *a, double *x, int *incx);
     void daxpy_(int *n, double *a, double const *x, int *incx,
                 double *y, int *incy);
     void dgemv_(char *transa, int *m, int *n,
@@ -15,6 +16,19 @@ extern "C"
 
 namespace BlasWrapper
 {
+
+void DSCAL(int n, double a, double *x)
+{
+    int inc = 1;
+    dscal_(&n, &a, x, &inc);
+}
+
+void DSCAL(double a, std::vector<double> &x)
+{
+    int n = x.size();
+    int inc = 1;
+    dscal_(&n, &a, &x[0], &inc);
+}
 
 void DAXPY(int n, double a, double const *x, double *y)
 {
@@ -98,6 +112,7 @@ std::vector<double> TimeStepper<std::vector<double> >::stoch_time_step(
 
     std::vector<double> pert(m);
     std::generate(pert.begin(), pert.end(), generator_);
+    BlasWrapper::DSCAL(sqrt(dt), pert);
 
     std::vector<double> y(x);
     BlasWrapper::DAXPY(dt, Fx, y);
@@ -107,25 +122,11 @@ std::vector<double> TimeStepper<std::vector<double> >::stoch_time_step(
 }
 
 template<>
-std::vector<double> TimeStepper<std::vector<double> >::stoch_transient(
-    std::vector<double> x,
-    double dt, double tmax)
-{
-    int end = tmax / dt;
-    for (int i = 0; i < end; i++)
-    {
-        x = stoch_time_step(x, dt);
-    }
-    return x;
-}
-
-template<>
 double TimeStepper<double>::transient(
     double x,
     double dt, double tmax)
 {
-    int end = tmax / dt;
-    for (int i = 0; i < end; i++)
+    for (double t = 0; t < tmax; t += dt)
         x = F_(x) * dt + x;
     return x;
 }
@@ -135,20 +136,5 @@ double TimeStepper<double>::stoch_time_step(
     double const &x,
     double dt)
 {
-    double Gx = G_(x);
-    double Fx = F_(x);
-    double pert = sqrt(dt) * generator_();
-
-    return  Fx * dt + Gx * pert;
-}
-
-template<>
-double TimeStepper<double>::stoch_transient(
-    double x,
-    double dt, double tmax)
-{
-    int end = tmax / dt;
-    for (int i = 0; i < end; i++)
-        x = stoch_time_step(x, dt);
-    return x;
+    return x + F_(x) * dt + G_(x) * sqrt(dt) * generator_();
 }

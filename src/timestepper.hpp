@@ -11,20 +11,24 @@ class TimeStepper
 {
     std::function<T(T const &)> F_;
     std::function<T(T const &)> G_;
+    std::function<T(T const &)> dist_fun_;
 
     std::function<double ()> generator_;
 
     double rho_;
-    double cdist_;
 
 public:
     TimeStepper(std::function<T(T const &)> F);
     TimeStepper(std::function<T(T const &)> F,
-                std::function<T(T const &)> G);
+                std::function<T(T const &)> G,
+                std::function<T(T const &)> dist_fun,
+                double rho);
 
     T transient(T x, double dt, double tmax);
     T stoch_time_step(T const &x, double dt);
     T stoch_transient(T x, double dt, double tmax);
+    double stoch_transient_max_distance(
+        T x, double dt, double tmax, double max_distance);
 };
 
 template<class T>
@@ -35,10 +39,14 @@ TimeStepper<T>::TimeStepper(std::function<T(T const &)> F)
 
 template<class T>
 TimeStepper<T>::TimeStepper(std::function<T(T const &)> F,
-                            std::function<T(T const &)> G)
+                            std::function<T(T const &)> G,
+                            std::function<T(T const &)> dist_fun,
+                            double rho)
     :
     F_(F),
-    G_(G)
+    G_(G),
+    dist_fun_(dist_fun),
+    rho_(rho)
 {
     std::random_device rd;
     std::default_random_engine engine(rd());
@@ -49,10 +57,23 @@ TimeStepper<T>::TimeStepper(std::function<T(T const &)> F,
 template<class T>
 T TimeStepper<T>::stoch_transient(T x, double dt, double tmax)
 {
-    int end = tmax / dt;
-    for (int i = 0; i < end; i++)
+    for (double t = 0; t < tmax; t += dt)
         x = stoch_time_step(x, dt);
     return x;
+}
+
+template<class T>
+double TimeStepper<T>::stoch_transient_max_distance(
+    T x, double dt, double tmax, double max_distance)
+{
+    const double lim = max_distance - rho_;
+    for (double t = 0; t < tmax; t += dt)
+    {
+        x = stoch_time_step(x, dt);
+        if (dist_fun_(x) > lim)
+            return t;
+    }
+    return -1;
 }
 
 #endif
