@@ -15,6 +15,7 @@ trans_prob_list2 = {};
 trans_prob_list3 = {};
 trans_prob_list4 = {};
 trans_prob_list5 = {};
+trans_prob_list6 = {};
 
 mfpt_list = [];
 mfpt_list2 = [];
@@ -50,6 +51,7 @@ for Bi=1:15
     trans_prob_list3{Bi} = [];
     trans_prob_list4{Bi} = [];
     trans_prob_list5{Bi} = [];
+    trans_prob_list6{Bi} = [];
 
     for tmax=1:10
         fprintf('T=%d\n', tmax);
@@ -73,6 +75,13 @@ for Bi=1:15
         trans_prob_list4{Bi} = [trans_prob_list4{Bi}, 1 - exp(-1 / mfpt4 * tmax)];
 
         trans_prob_list5{Bi} = [trans_prob_list5{Bi}, 1 - exp(-1 / mfptt * tmax)];
+
+        trans_prob2 = 0;
+        for i=1:samples
+            trans_prob = transitions_tams(F, B, dt, tmax, N1, rho);
+            trans_prob2 = trans_prob2 + trans_prob / samples;
+        end
+        trans_prob_list6{Bi} = [trans_prob_list6{Bi}, trans_prob2];
     end
 
     if Bi > 1
@@ -97,8 +106,9 @@ for Bi=1:15
         surf(x, t, cell2mat(trans_prob_list2')','FaceAlpha', 0.8, 'FaceColor', cols(3,:));
         surf(x, t, cell2mat(trans_prob_list3')','FaceAlpha', 0.8, 'FaceColor', cols(4,:));
         surf(x, t, cell2mat(trans_prob_list4')','FaceAlpha', 0.8, 'FaceColor', cols(5,:));
+        surf(x, t, cell2mat(trans_prob_list6')','FaceAlpha', 0.8, 'FaceColor', cols(6,:));
         hold off
-        legend('Theory', 'Direct', 'MFPT', 'GPA', 'AMS')
+        legend('Theory', 'Direct', 'MFPT', 'GPA', 'AMS', 'TAMS')
         xlabel('Noise')
         ylabel('Tmax')
         zlabel('Transition probability')
