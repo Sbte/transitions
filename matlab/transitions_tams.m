@@ -1,7 +1,5 @@
-function [trans_prob] = transitions_tams(F, B, dt, tmax, N, rho)
+function [trans_prob] = transitions_tams(F, B, dt, tmax, N, N3, rho)
 % Compute the transition probability with TAMS
-
-    N3 = 1000000;
 
     experiments = {};
 
@@ -81,5 +79,16 @@ function [trans_prob] = transitions_tams(F, B, dt, tmax, N, rho)
         its = its + 1;
     end
 
-    trans_prob = (1.0 - 1.0 / N) ^ its;
+    converged = 0;
+    for i = 1:N
+        if experiments{i}.max_dist > 1-rho
+            converged = converged + 1;
+        end
+    end
+
+    W = N * (1.0 - 1.0 / N) ^ its;
+    for i=1:(its-1)
+        W = W + (1.0 - 1.0 / N) ^ i;
+    end
+    trans_prob = (converged * (1.0 - 1.0 / N) ^ its) / W;
 end

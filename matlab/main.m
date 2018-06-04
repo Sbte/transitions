@@ -23,6 +23,7 @@ mfpt_list4 = [];
 
 N1=2000;
 N2=10000;
+N3=10000;
 
 for Bi=1:15
     B = sqrt(0.8^(Bi-1))
@@ -78,7 +79,7 @@ for Bi=1:15
 
         trans_prob2 = 0;
         for i=1:samples
-            trans_prob = transitions_tams(F, B, dt, tmax, N1, rho);
+            trans_prob = transitions_tams(F, B, dt, tmax, N1, N3, rho);
             trans_prob2 = trans_prob2 + trans_prob / samples;
         end
         trans_prob_list6{Bi} = [trans_prob_list6{Bi}, trans_prob2];
