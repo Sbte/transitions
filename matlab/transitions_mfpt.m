@@ -1,19 +1,19 @@
-function [trans_prob, mfpt] = transitions_mfpt(F, B, dt, tmax, N, rho)
+function [trans_prob, mfpt] = transitions_mfpt(F, B, z0, phi, dt, tmax, N, rho)
 % Compute mean first passage time and from that the transition probability
     mfpt = 0;
 
     t = 0;
-    z = ones(N,1) * -1;
+    z = z0 * ones(1,N);
 
     % Loop until all samples have transitioned
     while ~isempty(z)
-        dW = sqrt(dt) * randn(length(z),1);
+        dW = sqrt(dt) * randn(size(z));
 
         t = t + dt;
         z = z + dt * F(z) + B * dW;
 
-        converged = dist_fun(z) > 1-rho;
-        z = z(find(~converged));
+        converged = phi(z) > 1-rho;
+        z = z(:, ~converged);
 
         mfpt = mfpt + t * sum(converged);
     end

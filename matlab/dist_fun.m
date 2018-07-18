@@ -1,7 +1,7 @@
-function y=dist_fun(x)
-y = (x - 1) / 2;
-z = (x + 1) / 2;
-f1 = 0.25;
-f2 = 0.75;
-y = f1 - f1 * exp(-0.5 * (z / 0.25) .^2) + f2 * exp(-0.5 * (y / 0.25) .^2);
+function y=dist_fun(x, a, b)
+    y = ones(1,size(x,1)) * (x-b).^2;
+    z = ones(1,size(x,1)) * (x-a).^2;
+    f1 = 0.5;
+    f2 = 0.5;
+    y = f1 - f1 * exp(-8 * z) + f2 * exp(-8 * y);
 end

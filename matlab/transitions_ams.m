@@ -1,4 +1,4 @@
-function [trans_prob, mfpt] = transitions_ams(F, B, dt, tmax, N, rho)
+function [trans_prob, mfpt] = transitions_ams(F, B, z0, phi, dt, tmax, N, rho)
 % Compute the mean first passage time and transition probability with AMS
 
     N2 = N * 10;
@@ -9,14 +9,14 @@ function [trans_prob, mfpt] = transitions_ams(F, B, dt, tmax, N, rho)
 
     for i=1:N2
         t = 0;
-        z = -1;
+        z = z0;
         converged = false;
         while ~converged
-            dW = randn(1,M) * sqrt(dt);
+            dW = randn(size(z,1),M) * sqrt(dt);
             for j=1:M
                 t = t + dt;
-                z = z + dt * F(z) + B * dW(j);
-                dist = dist_fun(z);
+                z = z + dt * F(z) + B * dW(:,j);
+                dist = phi(z);
                 if dist > 0.1
                     clear experiment;
                     experiment.start_time = t;
@@ -35,14 +35,14 @@ function [trans_prob, mfpt] = transitions_ams(F, B, dt, tmax, N, rho)
 
     for i=1:N2
         t = 0;
-        z = experiments{i}.x(end);
+        z = experiments{i}.x(:,end);
         converged = false;
         while ~converged
-            dW = randn(1,M) * sqrt(dt);
+            dW = randn(size(z,1),M) * sqrt(dt);
             for j=1:M
                 t = t + dt;
-                z = z + dt * F(z) + B * dW(j);
-                dist = dist_fun(z);
+                z = z + dt * F(z) + B * dW(:,j);
+                dist = phi(z);
                 if dist > experiments{i}.max_dist
                     experiments{i}.x = [experiments{i}.x, z];
                     experiments{i}.t = [experiments{i}.t, t];
@@ -88,19 +88,19 @@ function [trans_prob, mfpt] = transitions_ams(F, B, dt, tmax, N, rho)
             same_dist_idx = same_dist_idx + 1;
         end
 
-        experiments{min_idx}.x = experiments{idx}.x(1:same_dist_idx);
+        experiments{min_idx}.x = experiments{idx}.x(:,1:same_dist_idx);
         experiments{min_idx}.t = experiments{idx}.t(1:same_dist_idx);
         experiments{min_idx}.d = experiments{idx}.d(1:same_dist_idx);
         experiments{min_idx}.max_dist = experiments{idx}.d(same_dist_idx);
         t = experiments{min_idx}.t(end);
-        z = experiments{min_idx}.x(end);
+        z = experiments{min_idx}.x(:,end);
         converged = false;
         while ~converged
-            dW = randn(1,M) * sqrt(dt);
+            dW = randn(size(z,1),M) * sqrt(dt);
             for j=1:M
                 t = t + dt;
-                z = z + dt * F(z) + B * dW(j);
-                dist = dist_fun(z);
+                z = z + dt * F(z) + B * dW(:,j);
+                dist = phi(z);
                 if dist > experiments{min_idx}.max_dist
                     experiments{min_idx}.x = [experiments{min_idx}.x, z];
                     experiments{min_idx}.t = [experiments{min_idx}.t, t];

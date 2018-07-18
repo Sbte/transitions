@@ -1,21 +1,21 @@
-function [trans_prob] = transitions_direct(F, B, dt, tmax, N, rho)
+function [trans_prob] = transitions_direct(F, B, z0, phi, dt, tmax, N, rho)
 % Compute the transition probability directly
     tsteps = tmax / dt;
 
     t = 0;
-    z = ones(N,1) * -1;
+    z = z0 * ones(1,N);
 
     % Loop until tmax and see if a transition happens
     for i=1:tsteps
-        dW = sqrt(dt) * randn(length(z),1);
+        dW = sqrt(dt) * randn(size(z));
 
         t = t + dt;
         z = z + dt * F(z) + B * dW;
 
-        converged = dist_fun(z) > 1-rho;
-        z = z(find(~converged));
+        converged = phi(z) > 1-rho;
+        z = z(:,~converged);
     end
 
-    ntrans = N - length(z);
+    ntrans = N - size(z,2);
     trans_prob = ntrans / N;
 end
