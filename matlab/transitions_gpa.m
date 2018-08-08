@@ -4,14 +4,13 @@ function [trans_prob] = transitions_gpa(F, B, z0, phi, dt, tmax, N, rho)
     tstep = dt * 100;
     z = z0 * ones(1,N);
     converged = zeros(1, N);
-    eta = 1;
     beta = 1;
     Y = ones(1, N);
 
-    for ti=1:tmax/tstep
-        weights = exp(beta * V(z));
+    weights = exp(beta * V(z));
 
-        eta = eta * 1 / N * sum(weights);
+    for ti=1:tmax/tstep
+        eta = 1 / N * sum(weights);
 
         samples = datasample(1:N, N, 'Weights', weights);
 
@@ -19,7 +18,8 @@ function [trans_prob] = transitions_gpa(F, B, z0, phi, dt, tmax, N, rho)
         Y = Y(samples);
         converged = converged(samples);
 
-        Y = Y .* exp(-beta * V(z));
+        weights = exp(beta * V(z));
+        Y = eta * Y ./ weights;
 
         for j=1:tstep / dt
             dW = randn(size(z)) * sqrt(dt);
@@ -36,7 +36,6 @@ function [trans_prob] = transitions_gpa(F, B, z0, phi, dt, tmax, N, rho)
         end
     end
 
-    trans_prob = trans_prob * eta;
     trans_prob = trans_prob / N;
 
     function y=V(x)
