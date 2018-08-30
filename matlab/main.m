@@ -42,95 +42,95 @@ Ntams = 1000;
 phi = @(x) dist_fun(x, zA, zB);
 VxxEv = eig(Vxx(zC));
 
-trans_prob_list = {};
+trans_prob_list1 = {};
 trans_prob_list2 = {};
 trans_prob_list3 = {};
 trans_prob_list4 = {};
 trans_prob_list5 = {};
 trans_prob_list6 = {};
 
-error_list = {};
-error_list2 = {};
-error_list3 = {};
-error_list4 = {};
-error_list5 = {};
-error_list6 = {};
+mfpt_list1 = [];
+mfpt_list3 = [];
+mfpt_list5 = [];
 
-mfpt_list = [];
-mfpt_list2 = [];
-mfpt_list4 = [];
-
-mfpt_error_list = [];
-mfpt_error_list2 = [];
-mfpt_error_list4 = [];
+data_list1 = [];
+data_list2 = {};
+data_list3 = [];
+data_list4 = {};
+data_list5 = [];
+data_list6 = {};
 
 for Bi=1:length(Brange)
     B = Brange(Bi);
 
-    trans_prob_list{Bi} = [];
+    trans_prob_list1{Bi} = [];
     trans_prob_list2{Bi} = [];
     trans_prob_list3{Bi} = [];
     trans_prob_list4{Bi} = [];
     trans_prob_list5{Bi} = [];
     trans_prob_list6{Bi} = [];
 
-    error_list{Bi} = [];
-    error_list2{Bi} = [];
-    error_list3{Bi} = [];
-    error_list4{Bi} = [];
-    error_list5{Bi} = [];
-    error_list6{Bi} = [];
+    data_list2{Bi} = [];
+    data_list4{Bi} = [];
+    data_list6{Bi} = [];
+
+    error_list1{Bi} = {};
+    error_list2{Bi} = {};
+    error_list3{Bi} = {};
+    error_list4{Bi} = {};
+    error_list5{Bi} = {};
+    error_list6{Bi} = {};
 
     mfptt = 2*pi / -min(VxxEv) * sqrt(abs(det(Vxx(zC)))/det(Vxx(zA))) * exp((V(zC) - V(zA)) / (sigma^2/2));
-    mfpt_list = [mfpt_list, mfptt];
-    mfpt_error_list = [mfpt_error_list, 0];
+    mfpt_list1 = [mfpt_list1, mfptt];
+    data_list1 = [data_list1, 0];
 
     mfpt = 0;
-    error = 0;
+    data = 0;
     if mfptt < 1e5
-        [error, trans_prob, mfpt] = make_samples(@transitions_mfpt, samples, F, B, z0, phi, dt, 1, Nmfpt, rho);
+        [data, trans_prob, mfpt] = make_samples(@transitions_mfpt, samples, F, B, z0, phi, dt, 1, Nmfpt, rho);
     end
-    mfpt_list2 = [mfpt_list2, mfpt];
-    mfpt_error_list2 = [mfpt_error_list2, error];
+    mfpt_list3 = [mfpt_list3, mfpt];
+    data_list3 = [data_list3, data];
 
-    [error, trans_prob, mfpt] = make_samples(@transitions_ams, samples, F, B, z0, phi, dt, 1, Nmfpt, rho);
-    mfpt_list4 = [mfpt_list4, mfpt];
-    mfpt_error_list4 = [mfpt_error_list4, error];
+    [data, trans_prob, mfpt] = make_samples(@transitions_ams, samples, F, B, z0, phi, dt, 1, Nmfpt, rho);
+    mfpt_list5 = [mfpt_list5, mfpt];
+    data_list5 = [data_list5, data];
 
+    Ti = 0;
     for tmax=Trange
         fprintf('T=%d\n', tmax);
+        Ti = Ti + 1;
 
-        [error, trans_prob] = make_samples(@transitions_direct, samples, F, B, z0, phi, dt, tmax, Ndirect, rho);
-        trans_prob_list{Bi} = [trans_prob_list{Bi}, trans_prob];
-        error_list{Bi} = [error_list{Bi}, error * trans_prob];
+        trans_prob_list1{Bi} = [trans_prob_list1{Bi}, 1 - exp(-1 / mfpt_list1(Bi) * tmax)];
 
-        trans_prob_list2{Bi} = [trans_prob_list2{Bi}, 1 - exp(-1 / mfpt_list2(Bi) * tmax)];
-        error_list2{Bi} = [error_list2{Bi}, mfpt_error_list2(Bi) * trans_prob_list2{Bi}(end)];
+        [data, trans_prob] = make_samples(@transitions_direct, samples, F, B, z0, phi, dt, tmax, Ndirect, rho);
+        trans_prob_list2{Bi} = [trans_prob_list2{Bi}, trans_prob];
+        data_list2{Bi} = [data_list2{Bi}, data];
+        error_list2{Bi}{Ti} = [data.Q1 - trans_prob, data.Q3 - trans_prob];
 
-        [error, trans_prob] = make_samples(@transitions_gpa, samples, F, B, z0, phi, dt, tmax, Ndirect, rho);
+        trans_prob = 1 - exp(-1 / mfpt_list3(Bi) * tmax);
+        data = data_list3(Bi);
         trans_prob_list3{Bi} = [trans_prob_list3{Bi}, trans_prob];
-        error_list3{Bi} = [error_list3{Bi}, error * trans_prob];
+        error_list3{Bi}{Ti} = [data.Q1 / data.mu * trans_prob - trans_prob,
+                            data.Q3 / data.mu * trans_prob - trans_prob];
 
-        trans_prob_list4{Bi} = [trans_prob_list4{Bi}, 1 - exp(-1 / mfpt_list4(Bi) * tmax)];
-        error_list4{Bi} = [error_list4{Bi}, mfpt_error_list4(Bi) * trans_prob_list4{Bi}(end)];
+        [data, trans_prob] = make_samples(@transitions_gpa, samples, F, B, z0, phi, dt, tmax, Ndirect, rho);
+        trans_prob_list4{Bi} = [trans_prob_list4{Bi}, trans_prob];
+        data_list4{Bi} = [data_list4{Bi}, data];
+        error_list4{Bi}{Ti} = [data.Q1 - trans_prob, data.Q3 - trans_prob];
 
-        trans_prob_list5{Bi} = [trans_prob_list5{Bi}, 1 - exp(-1 / mfpt_list(Bi) * tmax)];
-        error_list5{Bi} = [error_list5{Bi}, mfpt_error_list(Bi) * trans_prob_list5{Bi}(end)];
+        trans_prob = 1 - exp(-1 / mfpt_list5(Bi) * tmax);
+        data = data_list5(Bi);
+        trans_prob_list5{Bi} = [trans_prob_list5{Bi}, trans_prob];
+        error_list5{Bi}{Ti} = [data.Q1 / data.mu * trans_prob - trans_prob,
+                            data.Q3 / data.mu * trans_prob - trans_prob];
 
-        [error, trans_prob] = make_samples(@transitions_tams, samples, F, B, z0, phi, dt, tmax, Nmfpt, Ntams, rho);
+        [data, trans_prob] = make_samples(@transitions_tams, samples, F, B, z0, phi, dt, tmax, Nmfpt, Ntams, rho);
         trans_prob_list6{Bi} = [trans_prob_list6{Bi}, trans_prob];
-        error_list6{Bi} = [error_list6{Bi}, error * trans_prob];
+        data_list6{Bi} = [data_list6{Bi}, data];
+        error_list6{Bi}{Ti} = [data.Q1 - trans_prob, data.Q3 - trans_prob];
     end
 end
 
-plot(cell2mat(trans_prob_list5))
-hold on
-errorbar(cell2mat(trans_prob_list), cell2mat(error_list))
-errorbar(cell2mat(trans_prob_list2), cell2mat(error_list2))
-errorbar(cell2mat(trans_prob_list3), cell2mat(error_list3))
-errorbar(cell2mat(trans_prob_list4), cell2mat(error_list4))
-errorbar(cell2mat(trans_prob_list6), cell2mat(error_list6))
-legend('Theory', 'Direct', 'MFPT', 'GPA', 'AMS', 'TAMS', 'Location', 'northwest')
-xlabel('Tmax')
-ylabel('Transition probability')
-hold off
+generate_plots
