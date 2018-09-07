@@ -60,6 +60,14 @@ data_list4 = {};
 data_list5 = [];
 data_list6 = {};
 
+error_list1 = {};
+error_list2 = {};
+error_list3 = {};
+error_list4 = {};
+error_list5 = {};
+error_list6 = {};
+
+
 for Bi=1:length(Brange)
     B = Brange(Bi);
 
@@ -107,29 +115,29 @@ for Bi=1:length(Brange)
         [data, trans_prob] = make_samples(@transitions_direct, samples, F, B, z0, phi, dt, tmax, Ndirect, rho);
         trans_prob_list2{Bi} = [trans_prob_list2{Bi}, trans_prob];
         data_list2{Bi} = [data_list2{Bi}, data];
-        error_list2{Bi}{Ti} = [data.Q1 - trans_prob, data.Q3 - trans_prob];
+        error_list2{Bi}{Ti} = [trans_prob - data.Q1, data.Q3 - trans_prob];
 
         trans_prob = 1 - exp(-1 / mfpt_list3(Bi) * tmax);
         data = data_list3(Bi);
         trans_prob_list3{Bi} = [trans_prob_list3{Bi}, trans_prob];
-        error_list3{Bi}{Ti} = [data.Q1 / data.mu * trans_prob - trans_prob,
+        error_list3{Bi}{Ti} = [trans_prob - data.Q1 / data.mu * trans_prob,
                             data.Q3 / data.mu * trans_prob - trans_prob];
 
         [data, trans_prob] = make_samples(@transitions_gpa, samples, F, B, z0, phi, dt, tmax, Ndirect, rho);
         trans_prob_list4{Bi} = [trans_prob_list4{Bi}, trans_prob];
         data_list4{Bi} = [data_list4{Bi}, data];
-        error_list4{Bi}{Ti} = [data.Q1 - trans_prob, data.Q3 - trans_prob];
+        error_list4{Bi}{Ti} = [trans_prob - data.Q1, data.Q3 - trans_prob];
 
         trans_prob = 1 - exp(-1 / mfpt_list5(Bi) * tmax);
         data = data_list5(Bi);
         trans_prob_list5{Bi} = [trans_prob_list5{Bi}, trans_prob];
-        error_list5{Bi}{Ti} = [data.Q1 / data.mu * trans_prob - trans_prob,
+        error_list5{Bi}{Ti} = [trans_prob - data.Q1 / data.mu * trans_prob,
                             data.Q3 / data.mu * trans_prob - trans_prob];
 
         [data, trans_prob] = make_samples(@transitions_tams, samples, F, B, z0, phi, dt, tmax, Nmfpt, Ntams, rho);
         trans_prob_list6{Bi} = [trans_prob_list6{Bi}, trans_prob];
         data_list6{Bi} = [data_list6{Bi}, data];
-        error_list6{Bi}{Ti} = [data.Q1 - trans_prob, data.Q3 - trans_prob];
+        error_list6{Bi}{Ti} = [trans_prob - data.Q1, data.Q3 - trans_prob];
     end
 end
 
