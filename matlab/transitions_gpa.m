@@ -1,9 +1,10 @@
-function [trans_prob] = transitions_gpa(F, B, z0, phi, dt, tmax, N, rho)
+function [trans_prob, time_steps] = transitions_gpa(F, B, z0, phi, dt, tmax, N, rho)
 % Compute the transition probability with GPA
 
     tstep = dt * 100;
     z = z0 * ones(1,N);
     converged = zeros(1, N);
+    time_steps = 0;
     beta = 1;
     Y = ones(1, N);
 
@@ -24,6 +25,7 @@ function [trans_prob] = transitions_gpa(F, B, z0, phi, dt, tmax, N, rho)
             dW = randn(size(z)) * sqrt(dt);
             z = z + dt * F(z) + B * dW;
             converged = converged | (phi(z) > 1-rho);
+            time_steps = time_steps + size(z, 2);
         end
     end
 

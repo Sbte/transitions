@@ -1,4 +1,4 @@
-function [trans_prob] = transitions_tams(F, B, z0, phi, dt, tmax, N, N3, rho)
+function [trans_prob, time_steps] = transitions_tams(F, B, z0, phi, dt, tmax, N, N3, rho)
 % Compute the transition probability with TAMS
 
     experiments = {};
@@ -16,6 +16,7 @@ function [trans_prob] = transitions_tams(F, B, z0, phi, dt, tmax, N, N3, rho)
         experiment.x = [z];
         experiment.t = [t];
         experiment.d = [0];
+        experiment.steps = M;
         for j=1:M
             t = t + dt;
             z = z + dt * F(z) + B * dW(:,j);
@@ -81,6 +82,7 @@ function [trans_prob] = transitions_tams(F, B, z0, phi, dt, tmax, N, N3, rho)
             t = experiments{min_idx}.t(end);
             z = experiments{min_idx}.x(:,end);
             M = ceil(1/dt*(tmax-t));
+            experiments{min_idx}.steps = experiments{min_idx}.steps + M;
             dW = randn(size(z,1),M) * sqrt(dt);
             for j=1:M
                 t = t + dt;
@@ -92,6 +94,7 @@ function [trans_prob] = transitions_tams(F, B, z0, phi, dt, tmax, N, N3, rho)
                     experiments{min_idx}.d = [experiments{min_idx}.d, dist];
                     experiments{min_idx}.max_dist = dist;
                     if dist > 1-rho
+                        experiments{min_idx}.steps = experiments{min_idx}.steps - M + j;
                         break;
                     end
                 end
@@ -107,10 +110,12 @@ function [trans_prob] = transitions_tams(F, B, z0, phi, dt, tmax, N, N3, rho)
     end
 
     converged = 0;
+    time_steps = 0;
     for i = 1:N
         if experiments{i}.max_dist > 1-rho
             converged = converged + 1;
         end
+        time_steps = time_steps + experiments{i}.steps;
     end
     trans_prob = converged * w(end) / W;
 end

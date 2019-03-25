@@ -1,4 +1,4 @@
-function [trans_prob, mfpt] = transitions_ams(F, B, z0, phi, dt, tmax, N, rho)
+function [trans_prob, time_steps, mfpt] = transitions_ams(F, B, z0, phi, dt, tmax, N, rho)
 % Compute the mean first passage time and transition probability with AMS
 
     N2 = N * 10;
@@ -11,6 +11,7 @@ function [trans_prob, mfpt] = transitions_ams(F, B, z0, phi, dt, tmax, N, rho)
     for i=1:N2
         t = 0;
         z = z0;
+        steps = 0;
         converged = false;
         while ~converged
             dW = randn(size(z,1),M) * sqrt(dt);
@@ -26,11 +27,13 @@ function [trans_prob, mfpt] = transitions_ams(F, B, z0, phi, dt, tmax, N, rho)
                     experiment.d = [dist];
                     experiment.return_time = 0;
                     experiment.max_dist = dist;
+                    experiment.steps = steps + j;
                     experiments{i} = experiment;
                     converged = true;
                     break;
                 end
             end
+            steps = steps + M;
         end
     end
 
@@ -38,6 +41,7 @@ function [trans_prob, mfpt] = transitions_ams(F, B, z0, phi, dt, tmax, N, rho)
     for i=1:N2
         t = 0;
         z = experiments{i}.x(:,end);
+        steps = 0;
         converged = false;
         while ~converged
             dW = randn(size(z,1),M) * sqrt(dt);
@@ -49,6 +53,7 @@ function [trans_prob, mfpt] = transitions_ams(F, B, z0, phi, dt, tmax, N, rho)
                     experiments{i}.x = [experiments{i}.x, z];
                     experiments{i}.t = [experiments{i}.t, t];
                     experiments{i}.d = [experiments{i}.d, dist];
+                    experiments{i}.steps = experiments{i}.steps + steps + j;
                     experiments{i}.max_dist = dist;
                     if dist > 1-rho
                         converged = true;
@@ -58,10 +63,12 @@ function [trans_prob, mfpt] = transitions_ams(F, B, z0, phi, dt, tmax, N, rho)
                     if experiments{i}.return_time == 0
                         experiments{i}.return_time = t;
                     end
+                    experiments{i}.steps = experiments{i}.steps + steps + j;
                     converged = true;
                     break;
                 end
             end
+            steps = steps + M;
         end
     end
 
@@ -115,6 +122,7 @@ function [trans_prob, mfpt] = transitions_ams(F, B, z0, phi, dt, tmax, N, rho)
             experiments{min_idx}.max_dist = experiments{idx}.d(same_dist_idx);
             t = experiments{min_idx}.t(end);
             z = experiments{min_idx}.x(:,end);
+            steps = 0;
             converged = false;
             while ~converged
                 dW = randn(size(z,1),M) * sqrt(dt);
@@ -128,14 +136,17 @@ function [trans_prob, mfpt] = transitions_ams(F, B, z0, phi, dt, tmax, N, rho)
                         experiments{min_idx}.d = [experiments{min_idx}.d, dist];
                         experiments{min_idx}.max_dist = dist;
                         if dist > 1-rho
+                            experiments{min_idx}.steps = experiments{min_idx}.steps + steps + j;
                             converged = true;
                             break;
                         end
                     elseif dist < rho
+                        experiments{min_idx}.steps = experiments{min_idx}.steps + steps + j;
                         converged = true;
                         break;
                     end
                 end
+                steps = steps + M;
             end
         end
         its = its + 1;
@@ -162,11 +173,13 @@ function [trans_prob, mfpt] = transitions_ams(F, B, z0, phi, dt, tmax, N, rho)
     end
 
     converged = 0;
+    time_steps = 0;
     for i = 1:N
         if experiments{i}.max_dist > 1-rho
             converged = converged + 1;
             total_tr = total_tr + experiments{i}.t(end);
         end
+        time_steps = time_steps + experiments{i}.steps;
     end
     alpha = converged * w(end) / W;
 
