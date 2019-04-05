@@ -15,11 +15,13 @@ data.Q3 = 0;
 
 varargout{1} = 0;
 varargout{2} = 0;
-if nargout == 4
+if nargout == 3
     varargout{3} = 0;
 end
 for i=1:nsamples
-    if nargout == 4
+    % fs = functions(f);
+    % fprintf('%s: sample %d\n', fs.function, i);
+    if nargout == 3
         [a, b, c] = f(varargin{:});
         data.tp = [data.tp, a];
         data.mfpt = [data.mfpt, c];
@@ -27,8 +29,7 @@ for i=1:nsamples
         data.avg_steps = data.avg_steps + b / nsamples;
         data.mu = data.mu + c / nsamples;
         varargout{1} = varargout{1} + a / nsamples;
-        varargout{2} = data.avg_steps;
-        varargout{3} = data.mu;
+        varargout{2} = data.mu;
     else
         [a, b] = f(varargin{:});
         data.tp = [data.tp, a];
@@ -36,12 +37,11 @@ for i=1:nsamples
         data.avg_steps = data.avg_steps + b / nsamples;
         data.mu = data.mu + a / nsamples;
         varargout{1} = data.mu;
-        varargout{2} = data.avg_steps;
     end
 end
 
 if nsamples > 1
-    if nargout == 4
+    if nargout == 3
         d = sort(data.mfpt);
     else
         d = sort(data.tp);
